@@ -1,0 +1,5 @@
+---
+
+nvcc_arch: 86
+amber_gpu_arch: ampere
+amber_nccl: 'TRUE'

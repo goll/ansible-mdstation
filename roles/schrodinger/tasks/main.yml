@@ -1,0 +1,39 @@
+---
+# tasks file for roles/schrodinger
+
+- name: Extract Schrodinger
+  ansible.builtin.unarchive:
+    src: Schrodinger_Suites_{{ schrodinger_pkgver }}_Linux-x86_64.tar
+    dest: /tmp/build
+    creates: /tmp/build/Schrodinger_Suites_{{ schrodinger_pkgver }}_Linux-x86_64
+
+- name: Use rapidgzip to extract archives
+  ansible.builtin.replace:
+    path: /tmp/build/Schrodinger_Suites_{{ schrodinger_pkgver }}_Linux-x86_64/INSTALL
+    regexp: '(gzip -cd "\$1" \| tar --no-same-owner -xf -)'
+    replace: 'tar -I rapidgzip --no-same-owner -xf "$1"'
+
+- name: Create scratch directory
+  ansible.builtin.file:
+    path: /tmp/schrodinger{{ schrodinger_pkgver }}
+    state: directory
+    mode: '0777'
+
+- name: Install Schrodinger
+  ansible.builtin.shell: |
+      ./INSTALL \
+      -s /opt/schrodinger{{ schrodinger_pkgver }} \
+      -t /opt/schrodinger{{ schrodinger_pkgver }}/thirdparty \
+      -k /tmp/schrodinger{{ schrodinger_pkgver }} \
+      -b *
+  args:
+    chdir: /tmp/build/Schrodinger_Suites_{{ schrodinger_pkgver }}_Linux-x86_64
+    creates: /opt/schrodinger{{ schrodinger_pkgver }}
+  become: true
+
+- name: Install Schrodinger license
+  ansible.builtin.command:
+    cmd: ./licadmin INSTALL -c {{ schrodinger_license_server }}
+    chdir: /opt/schrodinger{{ schrodinger_pkgver }}
+    creates: /opt/schrodinger/licenses
+  become: true

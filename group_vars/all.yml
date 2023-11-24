@@ -1,0 +1,17 @@
+---
+
+amber_pkgver: 22
+ambertools_pkgver: 23
+autodock_gpu_pkgver: v1.5.3
+autodock_vina_pkgver: v1.2.5
+chimera_pkgver: 1.17.3
+chimerax_pkgver: 1.6.1
+gromacs_pkgver: 2023.3
+mgltools_pkgver: 1.5.7
+nccl_pkgver: v2.19.3-1
+schrodinger_pkgver: 2023-4
+vmd_pkgver: 1.9.4a57
+vmd_pkgver_bin: LINUXAMD64-CUDA102-OptiX650-OSPRay185
+
+nvcc_arch: 75
+amber_gpu_arch: turing

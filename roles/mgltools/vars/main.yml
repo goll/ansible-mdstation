@@ -1,0 +1,4 @@
+---
+# vars file for roles/mgltools
+
+mgltools_install_prefix: /opt/mgltools

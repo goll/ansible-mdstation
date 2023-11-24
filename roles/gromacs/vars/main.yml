@@ -1,0 +1,9 @@
+---
+# vars file for roles/gromacs
+
+gromacs_install_prefix: /opt/gromacs
+gromacs_build_own_fftw: 'OFF'
+gromacs_plugins: 'ON'
+gromacs_double: 'OFF'
+gromacs_gpu: CUDA
+gromacs_mpi: 'OFF'

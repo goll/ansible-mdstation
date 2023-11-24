@@ -1,0 +1,4 @@
+---
+# vars file for roles/schrodinger
+
+schrodinger_license_server: '27008@SERVER'

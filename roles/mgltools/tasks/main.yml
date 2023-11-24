@@ -1,0 +1,80 @@
+---
+# tasks file for roles/mgltools
+
+- name: Clone AutoDock-GPU
+  ansible.builtin.git:
+    repo: https://github.com/ccsb-scripps/AutoDock-GPU.git
+    dest: /tmp/build/autodock-gpu_{{ autodock_gpu_pkgver }}
+    depth: 1
+    update: false
+    version: "{{ autodock_gpu_pkgver }}"
+
+- name: Set nvcc_arch for AutoDock-GPU
+  ansible.builtin.lineinfile:
+    path: /tmp/build/autodock-gpu_{{ autodock_gpu_pkgver }}/Makefile.Cuda
+    regexp: '^TARGETS'
+    line: TARGETS = {{ nvcc_arch }}
+
+- name: Build AutoDock-GPU
+  ansible.builtin.shell: |
+    make -j$(nproc) DEVICE=CUDA NUMWI=128
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/cuda/bin"
+    GPU_INCLUDE_PATH: /usr/local/cuda/include
+    GPU_LIBRARY_PATH: /usr/local/cuda/lib64
+  args:
+    chdir: /tmp/build/autodock-gpu_{{ autodock_gpu_pkgver }}
+    creates: /tmp/build/autodock-gpu_{{ autodock_gpu_pkgver }}/bin/autodock_gpu_128wi
+
+- name: Install AutoDock-GPU
+  ansible.builtin.copy:
+    src: /tmp/build/autodock-gpu_{{ autodock_gpu_pkgver }}/bin/
+    dest: /usr/local/bin
+    remote_src: true
+    mode: '0755'
+  become: true
+
+- name: Clone AutoDock-Vina
+  ansible.builtin.git:
+    repo: https://github.com/ccsb-scripps/AutoDock-Vina.git
+    dest: /tmp/build/autodock-vina_{{ autodock_vina_pkgver }}
+    depth: 1
+    update: false
+    version: "{{ autodock_vina_pkgver }}"
+
+- name: Build AutoDock-Vina
+  ansible.builtin.shell: |
+    make -j$(nproc)
+  args:
+    chdir: /tmp/build/autodock-vina_{{ autodock_vina_pkgver }}/build/linux/release
+    creates: /tmp/build/autodock-vina_{{ autodock_vina_pkgver }}/build/linux/release/vina
+
+- name: Install AutoDock-Vina
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /usr/local/bin
+    remote_src: true
+    mode: '0755'
+  loop:
+    - /tmp/build/autodock-vina_{{ autodock_vina_pkgver }}/build/linux/release/vina
+    - /tmp/build/autodock-vina_{{ autodock_vina_pkgver }}/build/linux/release/vina_split
+  become: true
+
+- name: Extract MGLTools
+  ansible.builtin.unarchive:
+    src: mgltools_x86_64Linux2_{{ mgltools_pkgver }}p1.tar.gz
+    dest: /tmp/build
+    creates: /tmp/build/mgltools_x86_64Linux2_{{ mgltools_pkgver }}
+
+- name: Apply MGLTools patch
+  ansible.posix.patch:
+    src: mgltools.patch
+    basedir: /tmp/build/mgltools_x86_64Linux2_{{ mgltools_pkgver }}
+    strip: 1
+
+- name: Install MGLTools
+  ansible.builtin.command:
+    cmd: ./install.sh -d {{ mgltools_install_prefix }} -c 1
+    chdir: /tmp/build/mgltools_x86_64Linux2_{{ mgltools_pkgver }}
+    creates: "{{ mgltools_install_prefix }}"
+  become: true

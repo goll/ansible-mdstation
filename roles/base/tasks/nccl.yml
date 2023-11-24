@@ -1,0 +1,36 @@
+---
+
+- name: Clone NCCL
+  ansible.builtin.git:
+    repo: https://github.com/NVIDIA/nccl.git
+    dest: /tmp/build/nccl_{{ nccl_pkgver }}
+    depth: 1
+    update: false
+    version: "{{ nccl_pkgver }}"
+
+- name: Build NCCL
+  ansible.builtin.shell: |
+    make -j$(nproc) pkg.debian.build \
+    NVCC_GENCODE="-gencode=arch=compute_{{ nvcc_arch }},code=sm_{{ nvcc_arch }}"
+  args:
+    chdir: /tmp/build/nccl_{{ nccl_pkgver }}
+    creates: /tmp/build/nccl_{{ nccl_pkgver }}/build/pkg/deb
+
+- name: Find NCCL deb
+  ansible.builtin.find:
+    paths: /tmp/build/nccl_{{ nccl_pkgver }}/build/pkg/deb
+  register: nccl_deb
+
+- name: Install NCCL
+  ansible.builtin.apt:
+    deb: "{{ item.path }}"
+  loop: "{{ nccl_deb.files }}"
+  become: true
+
+- name: Hold local nccl packages
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - libnccl2
+    - libnccl-dev

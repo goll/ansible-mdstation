@@ -1,0 +1,8 @@
+---
+# playbook to bootstrap jammy for MD software
+
+- name: Bootstrap jammy
+  hosts: all
+  become: true
+  roles:
+    - base

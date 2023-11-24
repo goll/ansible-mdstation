@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+
+cd /tmp/build || exit
+sed -i 's/ltcl8.5/ltcl/g' plugins/Make-arch
+cd vmd-{{ vmd_pkgver }}
+mkdir plugins
+sed -i 's/NVCC_ARCH/{{ nvcc_arch }}/g' configure
+# sed -i 's#:${LD_LIBRARY_PATH}/:${LD_LIBRARY_PATH}:#/opt/optix/lib64#g' bin/*
+
+export PLUGINDIR=/tmp/build/vmd-{{ vmd_pkgver }}/plugins
+# export VMDINSTALLBINDIR=/usr/bin
+# export VMDINSTALLLIBRARYDIR=/usr/lib/vmd
+
+cd ../plugins
+make -j$(nproc) LINUXAMD64
+make distrib
+cd ../vmd-{{ vmd_pkgver }}
+./configure LINUXAMD64 CUDA OPENGL EGLPBUFFER FLTKOPENGL FLTK TK IMD OPENCL MPI XINERAMA XINPUT LIBPNG ZLIB NETCDF COLVARS TCL PYTHON NUMPY PTHREADS GCC
+cd src
+make veryclean
+make -j$(nproc)

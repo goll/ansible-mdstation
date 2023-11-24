@@ -1,0 +1,14 @@
+---
+# playbook to install MD software
+
+- name: Install MD software
+  hosts: all
+  gather_facts: false
+  roles:
+    - vmd
+    - mgltools
+    - chimera
+    - schrodinger
+    - gromacs
+    - amber
+    - postinst

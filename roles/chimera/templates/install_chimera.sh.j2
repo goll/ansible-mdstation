@@ -1,0 +1,32 @@
+#!/usr/bin/expect
+
+spawn /tmp/build/chimera-{{ chimera_pkgver }}-linux_x86_64.bin
+
+expect {
+    "Enter install location:" {
+        send "\025{{ chimera_install_prefix }}\r"
+        exp_continue
+    }
+    "Install desktop menu (icon has to be done by user)?" {
+        send "\r"
+        exp_continue
+    }
+    "Install symbolic link to chimera executable for command line use in which directory?" {
+        send "2\r"
+        exp_continue
+    }
+    "Create unversioned link to chimera executable in same directory?" {
+        send "\r"
+        exp_continue
+    }
+    "Installation is done; press return." {
+        send "\r"
+        exp_continue
+    }
+    timeout {
+        exit
+    }
+    eof {
+        exit
+    }
+}

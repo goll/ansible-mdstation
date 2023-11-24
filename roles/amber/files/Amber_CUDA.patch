@@ -1,0 +1,134 @@
+unchanged:
+--- a/cmake/CudaConfig.cmake	2023-04-10 18:17:07.000000000 +0200
++++ b/cmake/CudaConfig.cmake	2023-11-08 19:14:28.853908097 +0100
+@@ -19,6 +19,8 @@
+ 	
+ 		set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+ 
++		#SM8.9 = RTX40xx, RTX 6000, L40
++		set(SM89FLAGS -gencode arch=compute_89,code=sm_89)
+ 		#SM8.6  -- not currently used, but should be tested on Cuda 11.1
+ 		set(SM86FLAGS -gencode arch=compute_86,code=sm_86)
+ 		#SM8.0 = A100
+@@ -47,7 +49,11 @@
+ 		set(SM30FLAGS -gencode arch=compute_30,code=sm_30)
+ 	
+ 		message(STATUS "CUDA version ${CUDA_VERSION} detected")
+-		
++
++		set(CUDA_USER_ARCH "" CACHE STRING "Specify CUDA gpu architecture. Applicable for cuda and cudampi versions only. If empty, Amber will be compiled for several architectures based on the CUDA toolkit version.")
++
++		if("${CUDA_USER_ARCH}" STREQUAL "")
++
+ 		if(${CUDA_VERSION} VERSION_EQUAL 7.5)
+ 			message(STATUS "Configuring CUDA for SM3.0, SM5.0, SM5.2 and SM5.3")
+ 			message(STATUS "BE AWARE: CUDA 7.5 does not support GTX-1080, Titan-XP, DGX-1, V100 or other Pascal/Volta based GPUs.")
+@@ -84,6 +90,68 @@
+ 			message(FATAL_ERROR "Error: Untested CUDA version. AMBER currently requires CUDA version >= 7.5 and <= 12.1.")
+ 		endif()
+ 
++		else()
++
++			set(FOUND "FALSE")
++			
++			if("${CUDA_USER_ARCH}" MATCHES "kepler")
++				message(STATUS "Configuring for SM3.5")
++				list(APPEND CUDA_NVCC_FLAGS ${SM35FLAGS})
++				list(APPEND CUDA_NVCC_FLAGS -DUSE_LEGACY_ATOMICS)
++				set(FOUND "TRUE")
++			endif()
++				
++			if("${CUDA_USER_ARCH}" MATCHES "maxwell")
++				message(STATUS "Configuring for SM5.0")
++				list(APPEND CUDA_NVCC_FLAGS ${SM50FLAGS})
++				list(APPEND CUDA_NVCC_FLAGS -DUSE_LEGACY_ATOMICS)
++				set(FOUND "TRUE")
++			endif()
++
++			if("${CUDA_USER_ARCH}" MATCHES "pascal")
++				message(STATUS "Configuring for SM6.0")
++				list(APPEND CUDA_NVCC_FLAGS ${SM60FLAGS})
++				set(FOUND "TRUE")
++			endif()
++			
++			if("${CUDA_USER_ARCH}" MATCHES "volta")
++				message(STATUS "Configuring for SM7.0")
++				set(SM70FLAGS -gencode arch=compute_70,code=sm_70)
++				list(APPEND CUDA_NVCC_FLAGS ${SM70FLAGS})
++				set(FOUND "TRUE")
++			endif()
++
++			if("${CUDA_USER_ARCH}" MATCHES "turing")
++				message(STATUS "Configuring for SM7.5")
++				set(SM75FLAGS -gencode arch=compute_75,code=sm_75)
++				list(APPEND CUDA_NVCC_FLAGS ${SM75FLAGS})
++				set(FOUND "TRUE")
++			endif()
++
++			if("${CUDA_USER_ARCH}" MATCHES "ampere")
++				message(STATUS "Configuring for SM8.6")
++				list(APPEND CUDA_NVCC_FLAGS ${SM86FLAGS})
++				set(FOUND "TRUE")
++			endif()
++
++			if("${CUDA_USER_ARCH}" MATCHES "lovelace")
++				message(STATUS "Configuring for SM8.9")
++				list(APPEND CUDA_NVCC_FLAGS ${SM89FLAGS})
++				set(FOUND "TRUE")
++			endif()
++
++			if("${CUDA_USER_ARCH}" MATCHES "hopper")
++				message(STATUS "Configuring for SM9.0")
++				list(APPEND CUDA_NVCC_FLAGS ${SM90FLAGS})
++				set(FOUND "TRUE")
++			endif()
++
++			if (NOT ${FOUND})
++				message(FATAL_ERROR "Invalid value for CUDA_USER_ARCH. Possible values are kepler, maxwell, pascal, volta, turing, ampere, lovelace and hopper.")
++			endif()
++
++		endif()
++
+ 		#  check maximum GNU compiler versions wrt cuda:
+ 		#  VERSION_EQUAL 10 means 10.0, so use a range for comparing major version.
+ 		if ( "${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND (
+only in patch2:
+unchanged:
+--- a/AmberTools/src/quick/quick-cmake/QUICKCudaConfig.cmake	2023-03-14 20:27:15.000000000 +0100
++++ b/AmberTools/src/quick/quick-cmake/QUICKCudaConfig.cmake	2023-11-08 17:32:44.974466608 +0100
+@@ -19,6 +19,8 @@
+     set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+     #SM9.0 = H100
+     set(SM90FLAGS -gencode arch=compute_90,code=sm_90)
++    #SM8.9 = RTX40xx, RTX 6000, L40
++    set(SM89FLAGS -gencode arch=compute_89,code=sm_89)
+     #SM8.6 -- not currently used, but should be tested on Cuda 11.1
+     set(SM86FLAGS -gencode arch=compute_86,code=sm_86)
+     #SM8.0 = A100
+@@ -138,8 +140,15 @@
+         endif()
+ 
+         if("${QUICK_USER_ARCH}" MATCHES "ampere")
+-            message(STATUS "Configuring QUICK for SM8.0")
+-            list(APPEND CUDA_NVCC_FLAGS ${SM80FLAGS})
++            message(STATUS "Configuring QUICK for SM8.6")
++            list(APPEND CUDA_NVCC_FLAGS ${SM86FLAGS})
++            set(DISABLE_OPTIMIZER_CONSTANTS FALSE)
++            set(FOUND "TRUE")
++        endif()
++
++        if("${QUICK_USER_ARCH}" MATCHES "lovelace")
++            message(STATUS "Configuring QUICK for SM8.9")
++            list(APPEND CUDA_NVCC_FLAGS ${SM89FLAGS})
+             set(DISABLE_OPTIMIZER_CONSTANTS FALSE)
+             set(FOUND "TRUE")
+         endif()
+@@ -152,7 +161,7 @@
+         endif()
+ 
+         if (NOT ${FOUND})
+-            message(FATAL_ERROR "Invalid value for QUICK_USER_ARCH. Possible values are kepler, maxwell, pascal, volta, turing, ampere and hopper.")
++            message(FATAL_ERROR "Invalid value for QUICK_USER_ARCH. Possible values are kepler, maxwell, pascal, volta, turing, ampere, lovelace and hopper.")
+         endif()
+ 
+     endif()

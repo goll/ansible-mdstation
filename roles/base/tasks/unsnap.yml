@@ -1,0 +1,42 @@
+---
+
+- name: Populate service facts
+  ansible.builtin.service_facts:
+
+- name: Remove snaps
+  community.general.snap:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ base_snaps }}"
+  when:
+    - ansible_facts.services['snapd.service']['status'] == 'enabled'
+
+- name: Mask snapd
+  ansible.builtin.systemd:
+    name: snapd
+    state: stopped
+    masked: true
+
+- name: Purge snapd
+  ansible.builtin.apt:
+    name: snapd
+    state: absent
+    purge: true
+
+- name: Pin snapd priority
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/snapd
+    content: |
+      Package: snapd
+      Pin: release a=*
+      Pin-Priority: -3
+    mode: '0644'
+
+- name: Remove snap directories
+  ansible.builtin.file:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - /snap
+    - /var/snap
+    - /var/lib/snapd

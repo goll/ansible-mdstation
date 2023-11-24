@@ -1,0 +1,19 @@
+---
+
+- name: Download Netdata install script
+  ansible.builtin.get_url:
+    url: https://my-netdata.io/kickstart.sh
+    dest: /tmp/build/netdata_kickstart.sh
+    mode: '0755'
+
+- name: Install Netdata
+  ansible.builtin.command:
+    argv:
+      - ./netdata_kickstart.sh
+      - --no-updates
+      - --stable-channel
+      - --disable-telemetry
+      - --disable-cloud
+      - --dont-wait
+    chdir: /tmp/build
+    creates: /etc/netdata

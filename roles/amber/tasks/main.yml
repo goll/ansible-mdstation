@@ -1,0 +1,53 @@
+---
+# tasks file for roles/amber
+
+- name: Extract AmberTools
+  ansible.builtin.unarchive:
+    src: AmberTools{{ ambertools_pkgver }}.tar.bz2
+    dest: /tmp/build
+    creates: /tmp/build/amber{{ amber_pkgver }}_src
+
+- name: Extract Amber
+  ansible.builtin.unarchive:
+    src: Amber{{ amber_pkgver }}.tar.bz2
+    dest: /tmp/build/amber{{ amber_pkgver }}_src
+    creates: /tmp/build/amber{{ amber_pkgver }}_src/src
+    extra_opts:
+      - --strip-components=1
+
+- name: Apply Amber CUDA patch
+  ansible.posix.patch:
+    src: Amber_CUDA.patch
+    basedir: /tmp/build/amber{{ amber_pkgver }}_src
+    strip: 1
+
+- name: Create Amber build script
+  ansible.builtin.template:
+    src: build_amber.sh.j2
+    dest: /tmp/build/build_amber.sh
+    mode: '0755'
+
+- name: Use CUDA 11.8
+  ansible.builtin.command:
+    cmd: update-alternatives --set cuda /usr/local/cuda-11.8
+  changed_when: true
+  become: true
+
+- name: Build Amber
+  ansible.builtin.command:
+    cmd: /tmp/build/build_amber.sh
+  changed_when: true
+
+- name: Install Amber
+  ansible.builtin.shell: |
+    ninja install > ninja-install.log
+  args:
+    chdir: /tmp/build/amber{{ amber_pkgver }}_src/build
+    creates: "{{ amber_install_prefix }}"
+  become: true
+
+- name: Use CUDA 12.3
+  ansible.builtin.command:
+    cmd: update-alternatives --set cuda /usr/local/cuda-12.3
+  changed_when: true
+  become: true

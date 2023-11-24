@@ -1,0 +1,58 @@
+---
+
+- name: Install CUDA keyring
+  ansible.builtin.apt:
+    deb: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_{{ base_cuda_keyring }}_all.deb
+
+- name: Add LibreOffice Fresh repo
+  ansible.builtin.deb822_repository:
+    name: libreoffice
+    types: deb
+    uris: http://ppa.launchpad.net/libreoffice/ppa/ubuntu
+    suites: jammy
+    components: main
+    architectures: amd64
+    signed_by: https://keyserver.ubuntu.com/pks/lookup?op=get&search={{ base_libreoffice_key }}
+
+- name: Add Mozilla Team repo
+  ansible.builtin.deb822_repository:
+    name: mozillateam
+    types: deb
+    uris: http://ppa.launchpad.net/mozillateam/ppa/ubuntu
+    suites: jammy
+    components: main
+    architectures: amd64
+    signed_by: https://keyserver.ubuntu.com/pks/lookup?op=get&search={{ base_mozillateam_key }}
+
+- name: Add VSCodium repo
+  ansible.builtin.deb822_repository:
+    name: vscodium
+    types: deb
+    uris: https://download.vscodium.com/debs
+    suites: vscodium
+    components: main
+    architectures: amd64
+    signed_by: https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg
+
+- name: Pin firefox priority
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/firefox
+    content: |
+      Package: firefox*
+      Pin: release o=LP-PPA-mozillateam
+      Pin-Priority: 501
+    mode: '0644'
+
+- name: Install required dependencies
+  ansible.builtin.apt:
+    name: "{{ base_deps }}"
+    install_recommends: false
+    update_cache: true
+
+- name: Run apt-get clean
+  ansible.builtin.apt:
+    clean: true
+
+- name: Install pip packages
+  ansible.builtin.pip:
+    name: "{{ base_pip }}"

@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+
+srcdir=/tmp/build/gromacs-{{ gromacs_pkgver }}/build
+
+rm -rf ${srcdir}
+mkdir -p ${srcdir}
+
+cd ${srcdir} || exit
+cmake .. \
+    -DREGRESSIONTEST_PATH=../regressiontests-{{ gromacs_pkgver }} \
+    -DCMAKE_INSTALL_PREFIX={{ gromacs_install_prefix }} \
+    -DGMX_BUILD_OWN_FFTW={{ gromacs_build_own_fftw }} \
+    -DGMX_CUDA_TARGET_SM={{ nvcc_arch }} \
+    -DGMX_USE_PLUGINS={{ gromacs_plugins }} \
+    -DGMX_DOUBLE={{ gromacs_double }} \
+    -DGMX_GPU={{ gromacs_gpu }} \
+    -DGMX_MPI={{ gromacs_mpi }} \
+    -GNinja \
+    2>&1 | tee cmake.log
+
+ninja | tee ninja.log
+ninja check | tee ninja-check.log

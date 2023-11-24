@@ -1,0 +1,4 @@
+---
+
+nvcc_arch: 89
+amber_gpu_arch: lovelace

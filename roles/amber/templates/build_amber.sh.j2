@@ -1,0 +1,24 @@
+#!/usr/bin/bash
+
+cd /tmp/build/amber{{ amber_pkgver }}_src/build || exit
+../update_amber --update
+./clean_build -f
+
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX={{ amber_install_prefix }} \
+    -DDOWNLOAD_MINICONDA={{ amber_download_miniconda }} \
+    -DQUICK_USER_ARCH={{ amber_gpu_arch }} \
+    -DCUDA_USER_ARCH={{ amber_gpu_arch }} \
+    -DTRUST_SYSTEM_LIBS={{ amber_trust_system_libs }} \
+    -DCHECK_UPDATES={{ amber_check_updates }} \
+    -DINSTALL_TESTS={{ amber_install_tests }} \
+    -DBUILD_GUI={{ amber_build_gui }} \
+    -DCOMPILER={{ amber_compiler }} \
+    -DOPENMP={{ amber_openmp }} \
+    -DCUDA={{ amber_cuda }} \
+    -DNCCL={{ amber_nccl }} \
+    -DMPI={{ amber_mpi }} \
+    -GNinja \
+    2>&1 | tee cmake.log
+
+ninja | tee ninja.log

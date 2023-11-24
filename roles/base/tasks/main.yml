@@ -1,0 +1,41 @@
+---
+# tasks file for roles/base
+
+- name: Check if OS is Ubuntu 22.04
+  ansible.builtin.fail:
+    msg: This playbook can only be run on Ubuntu 22.04
+  when: ansible_distribution != 'Ubuntu' or ansible_distribution_release != 'jammy'
+
+# - name: Install netdata
+#   ansible.builtin.import_tasks:
+#     file: netdata.yml
+
+- name: Setup base systemd units
+  ansible.builtin.import_tasks:
+    file: systemd.yml
+
+- name: Remove snapd
+  ansible.builtin.import_tasks:
+    file: unsnap.yml
+
+- name: Install required packages
+  ansible.builtin.import_tasks:
+    file: apt.yml
+
+- name: Install nccl
+  ansible.builtin.import_tasks:
+    file: nccl.yml
+
+- name: Setup user accounts
+  ansible.builtin.import_tasks:
+    file: users.yml
+
+- name: Setup custom aliases and environments
+  ansible.builtin.import_tasks:
+    file: env.yml
+
+- name: Set CPU governor to performance
+  ansible.builtin.systemd:
+    name: cpupower
+    state: started
+    enabled: true

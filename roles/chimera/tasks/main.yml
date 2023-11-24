@@ -1,0 +1,31 @@
+---
+# tasks file for roles/chimera
+
+- name: Copy Chimera installer
+  ansible.builtin.copy:
+    src: chimera-{{ chimera_pkgver }}-linux_x86_64.bin
+    dest: /tmp/build
+    mode: '0755'
+
+- name: Create Chimera install script
+  ansible.builtin.template:
+    src: install_chimera.sh.j2
+    dest: /tmp/build/install_chimera.sh
+    mode: '0755'
+
+- name: Install Chimera
+  ansible.builtin.command:
+    cmd: /tmp/build/install_chimera.sh
+    creates: /opt/chimera
+  become: true
+
+- name: Copy ChimeraX package
+  ansible.builtin.copy:
+    src: ucsf-chimerax_{{ chimerax_pkgver }}ubuntu22.04_amd64.deb
+    dest: /tmp/build
+    mode: '0644'
+
+- name: Install ChimeraX
+  ansible.builtin.apt:
+    deb: /tmp/build/ucsf-chimerax_{{ chimerax_pkgver }}ubuntu22.04_amd64.deb
+  become: true

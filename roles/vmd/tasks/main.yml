@@ -1,0 +1,47 @@
+---
+# tasks file for roles/vmd
+
+- name: Extract VMD
+  ansible.builtin.unarchive:
+    src: vmd-{{ vmd_pkgver }}.bin.{{ vmd_pkgver_bin }}.opengl.tar.gz
+    dest: /tmp/build
+    creates: /tmp/build/vmd-{{ vmd_pkgver }}
+
+- name: Install VMD
+  ansible.builtin.shell: |
+    ./configure
+    cd src
+    make install
+  args:
+    chdir: /tmp/build/vmd-{{ vmd_pkgver }}
+    creates: /usr/local/lib/vmd
+  become: true
+
+# - name: Extract VMD
+#   ansible.builtin.unarchive:
+#     src: vmd-{{ vmd_pkgver }}.src.tar.gz
+#     dest: /tmp/build
+#     creates: /tmp/build/vmd-{{ vmd_pkgver }}
+
+# - name: Apply VMD patch
+#   ansible.posix.patch:
+#     src: vmd-{{ vmd_pkgver }}_configure.patch
+#     basedir: /tmp/build/vmd-{{ vmd_pkgver }}
+
+# - name: Create VMD build script
+#   ansible.builtin.template:
+#     src: build_vmd.sh.j2
+#     dest: /tmp/build/build_vmd.sh
+#     mode: '0755'
+
+# - name: Build VMD
+#   ansible.builtin.command:
+#     cmd: /tmp/build/build_vmd.sh
+#     creates: /tmp/build/vmd-{{ vmd_pkgver }}/LINUXAMD64/vmd_LINUXAMD64
+
+# - name: Install VMD
+#   ansible.builtin.command:
+#     cmd: make install
+#     chdir: /tmp/build/vmd-{{ vmd_pkgver }}/src
+#     creates: /usr/local/lib/vmd
+#   become: true

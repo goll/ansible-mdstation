@@ -1,0 +1,13 @@
+---
+# tasks file for roles/postinst
+
+- name: Cleanup Schrodinger install
+  ansible.builtin.file:
+    path: /tmp/build/Schrodinger_Suites_{{ schrodinger_pkgver }}_Linux-x86_64
+    state: absent
+
+- name: Preserve build directory
+  ansible.builtin.command:
+    cmd: mv /tmp/build /opt
+    creates: /opt/build
+  become: true

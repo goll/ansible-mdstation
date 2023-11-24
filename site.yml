@@ -1,0 +1,7 @@
+---
+
+- name: Base
+  ansible.builtin.import_playbook: base.yml
+
+- name: Molecular Dynamics
+  ansible.builtin.import_playbook: md.yml

@@ -1,0 +1,33 @@
+---
+# tasks file for roles/gromacs
+
+- name: Extract GROMACS
+  ansible.builtin.unarchive:
+    src: gromacs-{{ gromacs_pkgver }}.tar.gz
+    dest: /tmp/build
+    creates: /tmp/build/gromacs-{{ gromacs_pkgver }}
+
+- name: Extract GROMACS regression tests
+  ansible.builtin.unarchive:
+    src: regressiontests-{{ gromacs_pkgver }}.tar.gz
+    dest: /tmp/build/gromacs-{{ gromacs_pkgver }}
+    creates: /tmp/build/gromacs-{{ gromacs_pkgver }}/regressiontests-{{ gromacs_pkgver }}
+
+- name: Create GROMACS build script
+  ansible.builtin.template:
+    src: build_gromacs.sh.j2
+    dest: /tmp/build/build_gromacs.sh
+    mode: '0755'
+
+- name: Build GROMACS
+  ansible.builtin.command:
+    cmd: /tmp/build/build_gromacs.sh
+  changed_when: true
+
+- name: Install GROMACS
+  ansible.builtin.shell: |
+    ninja install > ninja-install.log
+  args:
+    chdir: /tmp/build/gromacs-{{ gromacs_pkgver }}/build
+    creates: "{{ gromacs_install_prefix }}"
+  become: true

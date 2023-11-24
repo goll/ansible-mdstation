@@ -1,0 +1,79 @@
+---
+# vars file for roles/base
+
+base_users:
+  - name: AzureDiamond
+    password: hunter2
+
+base_deps:
+  - bison
+  - cmake
+  - codium
+  - cuda-drivers-545
+  - cuda-toolkit-11-8
+  - cuda-toolkit-12-3
+  - cython3
+  - debhelper
+  - devscripts
+  - expect
+  - fakeroot
+  - firefox
+  - flex
+  - gfortran
+  - git
+  - htop
+  - libarpack2-dev
+  - libboost-chrono-dev
+  - libboost-filesystem-dev
+  - libboost-graph-dev
+  - libboost-iostreams-dev
+  - libboost-program-options-dev
+  - libboost-regex-dev
+  - libboost-system-dev
+  - libboost-thread-dev
+  - libboost-timer-dev
+  - libbz2-dev
+  - libchemistry-mol-perl
+  - libfftw3-dev
+  - libfftw3-mpi-dev
+  - libnetcdf-dev
+  - libnetcdff-dev
+  - libopenmpi-dev
+  - libpnetcdf-dev
+  - libreadline-dev
+  - libreoffice
+  - linux-tools-generic-hwe-22.04
+  - mesa-utils
+  - mlocate
+  - ninja-build
+  - nvidia-kernel-open-545
+  - python3-matplotlib
+  - python3-mpi4py
+  - python3-pip
+  - python3-scipy
+  - python-is-python3
+  - tcsh
+  - tmux
+  - ucpp
+  - vim
+
+base_pip:
+  - nvitop
+  - rapidgzip
+
+base_snaps:
+  - firefox
+  - gtk-common-themes
+  - gnome-3-38-2004
+  - gnome-42-2204
+  - snapd-desktop-integration
+  - snap-store
+  - core20
+  - core22
+  - bare
+  - snapd
+
+base_cuda_keyring: 1.1-1
+base_libreoffice_key: '0x36E81C9267FD1383FCC4490983FBA1751378B444'
+base_mozillateam_key: '0x0AB215679C571D1C8325275B9BDB3D89CE49EC21'
+base_ntp: '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org'

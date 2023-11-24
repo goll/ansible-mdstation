@@ -1,0 +1,14 @@
+---
+# vars file for roles/amber
+
+amber_install_prefix: /opt/amber
+amber_download_miniconda: 'FALSE'
+amber_trust_system_libs: 'TRUE'
+amber_check_updates: 'FALSE'
+amber_install_tests: 'FALSE'
+amber_build_gui: 'FALSE'
+amber_compiler: GNU
+amber_openmp: 'TRUE'
+amber_cuda: 'TRUE'
+amber_nccl: 'FALSE'
+amber_mpi: 'TRUE'
